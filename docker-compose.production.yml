@@ -1,0 +1,34 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: exchanger-postgres
+    networks:
+      - network
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USERNAME:?}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?}
+      - POSTGRES_DB=${POSTGRES_DATABASE:?}
+      - PGDATA=${PGDATA:?}
+    restart: unless-stopped
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    container_name: exchanger-server
+    depends_on:
+      - postgres
+    ports:
+      - "5050:5050"
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge
